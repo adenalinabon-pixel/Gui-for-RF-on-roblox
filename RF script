@@ -1,0 +1,158 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Rainbow Friends Simple | 2026 Gui",
+   LoadingTitle = "rainbow friends simple gui",
+   LoadingSubtitle = "by robloxplayer37864",
+   ConfigurationSaving = {
+      Enabled = false 
+   },
+   KeySystem = true,
+   KeySettings = {
+      Title = "Access Key Required",
+      Subtitle = "Rainbow Friends Script",
+      Note = "Get the key here: https://m.youtube.com/shorts/rnmFc75j2_o",
+      FileName = "RFKey", 
+      SaveKey = true, 
+      GrabKeyFromSite = false,
+      Key = {"5656"},
+      Actions = {
+          [1] = {
+              Text = "Copy Key Link",
+              Callback = function()
+                  setclipboard("https://m.youtube.com/shorts/rnmFc75j2_o")
+              end
+          }
+      }
+   }
+})
+
+-- [[ Tabs ]]
+local MainTab = Window:CreateTab("Main", 4483362458)
+local VisualsTab = Window:CreateTab("Visuals", 4483362458)
+local OthersTab = Window:CreateTab("Others", 4483362458)
+
+-- [[ Main Features ]]
+MainTab:CreateSection("Movement")
+
+MainTab:CreateSlider({
+   Name = "WalkSpeed",
+   Range = {16, 100},
+   Increment = 1,
+   Suffix = "Speed",
+   CurrentValue = 16,
+   Flag = "WS_Slider",
+   Callback = function(Value)
+      if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+      end
+   end,
+})
+
+MainTab:CreateButton({
+   Name = "Set WalkSpeed to Normal (16)",
+   Callback = function()
+      if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+         Rayfield:Notify({Title = "Movement", Content = "Speed reset to 16", Duration = 2})
+      end
+   end,
+})
+
+-- [[ Visuals / ESP ]]
+VisualsTab:CreateSection("Monster Visuals")
+
+VisualsTab:CreateToggle({
+   Name = "Monster ESP (Highlight + Billboard)",
+   CurrentValue = false,
+   Flag = "MonsterESP",
+   Callback = function(Value)
+      _G.MonsterESP = Value
+      while _G.MonsterESP do
+         if workspace:FindFirstChild("Monsters") then
+            for _, v in pairs(workspace.Monsters:GetChildren()) do
+               local root = v:FindFirstChild("HumanoidRootPart") or v:FindFirstChild("Head")
+               
+               -- Billboard (Name & Distance)
+               if root and not v:FindFirstChild("MonsterBillboard") then
+                  local billboard = Instance.new("BillboardGui", v)
+                  billboard.Name = "MonsterBillboard"
+                  billboard.AlwaysOnTop = true
+                  billboard.Size = UDim2.new(0, 150, 0, 50)
+                  billboard.ExtentsOffset = Vector3.new(0, 3, 0)
+                  
+                  local label = Instance.new("TextLabel", billboard)
+                  label.Name = "DistanceLabel"
+                  label.BackgroundTransparency = 1
+                  label.Size = UDim2.new(1, 0, 1, 0)
+                  label.TextColor3 = Color3.fromRGB(255, 0, 0)
+                  label.TextStrokeTransparency = 0
+                  label.TextScaled = true
+                  label.Font = Enum.Font.SourceSansBold
+               end
+               
+               -- Highlight (Glow Outline)
+               if not v:FindFirstChild("MonsterHighlight") then
+                  local highlight = Instance.new("Highlight", v)
+                  highlight.Name = "MonsterHighlight"
+                  highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                  highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                  highlight.FillTransparency = 0.5
+                  highlight.OutlineTransparency = 0
+               end
+               
+               -- Update Distance
+               if v:FindFirstChild("MonsterBillboard") and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                  local dist = math.floor((game.Players.LocalPlayer.Character.HumanoidRootPart.Position - root.Position).Magnitude)
+                  v.MonsterBillboard.DistanceLabel.Text = v.Name .. " [" .. dist .. " studs]"
+               end
+            end
+         end
+         task.wait(0.1)
+         
+         if not _G.MonsterESP then 
+            if workspace:FindFirstChild("Monsters") then
+               for _, v in pairs(workspace.Monsters:GetChildren()) do
+                  if v:FindFirstChild("MonsterBillboard") then v.MonsterBillboard:Destroy() end
+                  if v:FindFirstChild("MonsterHighlight") then v.MonsterHighlight:Destroy() end
+               end
+            end
+            break 
+         end
+      end
+   end,
+})
+
+-- [[ Others Tab ]]
+OthersTab:CreateSection("External Scripts")
+
+OthersTab:CreateButton({
+   Name = "Load Infinite Yield",
+   Callback = function()
+      loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+   end,
+})
+
+OthersTab:CreateSection("Server Utilities")
+
+OthersTab:CreateButton({
+   Name = "Server Hop",
+   Callback = function()
+      local Http = game:GetService("HttpService")
+      local TPS = game:GetService("TeleportService")
+      local Api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100"
+      local function ListServers(cursor)
+         local Raw = game:HttpGet(Api .. ((cursor and "&cursor=" .. cursor) or ""))
+         return Http:JSONDecode(Raw)
+      end
+      local Server = ListServers()
+      TPS:TeleportToPlaceInstance(game.PlaceId, Server.data[math.random(1, #Server.data)].id, game.Players.LocalPlayer)
+   end,
+})
+
+OthersTab:CreateButton({
+   Name = "Rejoin Server",
+   Callback = function()
+      game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
+   end,
+})
